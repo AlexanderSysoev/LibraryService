@@ -29,12 +29,17 @@ namespace LibraryService
 
         [PrincipalPermission(SecurityAction.Demand, Role = LibrarianRoles.Senior)]
         [PrincipalPermission(SecurityAction.Demand, Role = LibrarianRoles.Middle)]
-        public void Get(Book book)
+        public bool Get(Book book)
         {
             var dbBook = GetById(book.Id);
+            if (dbBook.Status != BookStatus.Free)
+            {
+                return false;
+            }
 
             dbBook.Status = BookStatus.InUse;
             _dbContext.SaveChanges();
+            return true;
         }
 
         [PrincipalPermission(SecurityAction.Demand, Role = LibrarianRoles.Senior)]
@@ -49,12 +54,17 @@ namespace LibraryService
         }
 
         [PrincipalPermission(SecurityAction.Demand, Role = LibrarianRoles.Senior)]
-        public void Recycle(Book book)
+        public bool Recycle(Book book)
         {
             var dbBook = GetById(book.Id);
+            if (dbBook.Status != BookStatus.Free)
+            {
+                return false;
+            }
 
             dbBook.Status = BookStatus.Recycled;
             _dbContext.SaveChanges();
+            return true;
         }
 
         private Book GetById(int id)

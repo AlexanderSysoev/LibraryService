@@ -57,13 +57,26 @@ namespace LibraryService.Tests
         }
 
         [Test]
-        public void Get_SetStatusToInUse()
+        public void Get_BookIsNotFree_ReturnsFalse()
         {
             var libraryService = new LibraryService(_dbContext);
-            libraryService.Get(_book);
+            _book.Status = BookStatus.InUse;
+            var result = libraryService.Get(_book);
 
             var book = _dbContext.Books.Find(_book.Id);
-            Assert.IsNotNull(book);
+            Assert.IsFalse(result);
+            Assert.AreEqual(BookStatus.InUse, book.Status);
+        }
+
+        [Test]
+        public void Get_BookIsFree_SetStatusToInUseAndReturnsTrue()
+        {
+            var libraryService = new LibraryService(_dbContext);
+            _book.Status = BookStatus.Free;
+            var result = libraryService.Get(_book);
+
+            var book = _dbContext.Books.Find(_book.Id);
+            Assert.IsTrue(result);
             Assert.AreEqual(BookStatus.InUse, book.Status);
         }
 
@@ -74,21 +87,32 @@ namespace LibraryService.Tests
             libraryService.Return(_book);
 
             var book = _dbContext.Books.Find(_book.Id);
-            Assert.IsNotNull(book);
             Assert.AreEqual(BookStatus.Free, book.Status);
         }
 
         [Test]
-        public void Recycle_SetStatusToRecycled()
+        public void Recycle_BookIsNotFree_ReturnsFalse()
         {
             var libraryService = new LibraryService(_dbContext);
-            libraryService.Recycle(_book);
+            _book.Status = BookStatus.InUse;
+            var result = libraryService.Recycle(_book);
 
             var book = _dbContext.Books.Find(_book.Id);
-            Assert.IsNotNull(book);
-            Assert.AreEqual(BookStatus.Recycled, book.Status);
+            Assert.AreEqual(BookStatus.InUse, book.Status);
+            Assert.IsFalse(result);
         }
 
+        [Test]
+        public void Recycle_BookIsFree_SetStatusToRecycledAndReturnsTrue()
+        {
+            var libraryService = new LibraryService(_dbContext);
+            _book.Status = BookStatus.Free;
+            var result = libraryService.Recycle(_book);
+
+            var book = _dbContext.Books.Find(_book.Id);
+            Assert.AreEqual(BookStatus.Recycled, book.Status);
+            Assert.IsTrue(result);
+        }
 
         [TearDown]
         public void Clean()
